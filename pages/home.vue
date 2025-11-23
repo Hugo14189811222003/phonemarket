@@ -17,28 +17,28 @@
           <div class="filter-section">
             <h3>Marcas</h3>
             <ul>
-              <li><label><input type="checkbox"> Apple</label></li>
-              <li><label><input type="checkbox"> Samsung</label></li>
-              <li><label><input type="checkbox"> Xiaomi</label></li>
-              <li><label><input type="checkbox"> Google</label></li>
+              <li><label><input type="checkbox" value="Apple" v-model="selectedBrands"> Apple</label></li>
+              <li><label><input type="checkbox" value="Samsung" v-model="selectedBrands"> Samsung</label></li>
+              <li><label><input type="checkbox" value="Xiaomi" v-model="selectedBrands"> Xiaomi</label></li>
+              <li><label><input type="checkbox" value="Google" v-model="selectedBrands"> Google</label></li>
             </ul>
           </div>
           
           <div class="filter-section">
             <h3>Condición</h3>
             <ul>
-              <li><label><input type="checkbox"> Nuevo</label></li>
-              <li><label><input type="checkbox"> Como nuevo</label></li>
-              <li><label><input type="checkbox"> Bueno</label></li>
+              <li><label><input type="checkbox" value="Nuevo" v-model="selectedConditions"> Nuevo</label></li>
+              <li><label><input type="checkbox" value="Como nuevo" v-model="selectedConditions"> Como nuevo</label></li>
+              <li><label><input type="checkbox" value="Bueno" v-model="selectedConditions"> Bueno</label></li>
             </ul>
           </div>
 
           <div class="filter-section">
             <h3>Precio</h3>
             <ul>
-              <li><label><input type="checkbox"> Menos de $200</label></li>
-              <li><label><input type="checkbox"> $200 - $500</label></li>
-              <li><label><input type="checkbox"> Más de $500</label></li>
+              <li><label><input type="checkbox" value="under200" v-model="selectedPriceRanges"> Menos de $200</label></li>
+              <li><label><input type="checkbox" value="200to500" v-model="selectedPriceRanges"> $200 - $500</label></li>
+              <li><label><input type="checkbox" value="over500" v-model="selectedPriceRanges"> Más de $500</label></li>
             </ul>
           </div>
         </aside>
@@ -46,7 +46,7 @@
         <!-- Product Grid -->
         <div class="products-grid">
           <ProductCard 
-            v-for="phone in phones" 
+            v-for="phone in filteredPhones" 
             :key="phone.id"
             :title="phone.title"
             :price="phone.price"
@@ -61,19 +61,30 @@
 </template>
 
 <script setup>
-// Dummy data
+const searchQuery = useState('searchQuery', () => '')
+
+// Filter states
+const selectedBrands = ref([])
+const selectedConditions = ref([])
+const selectedPriceRanges = ref([])
+
+// Dummy data with added fields for filtering
 const phones = ref([
   {
     id: 1,
     title: 'iPhone 13 Pro Max - 128GB - Azul Sierra (Reacondicionado)',
+    brand: 'Apple',
+    condition: 'Como nuevo',
     price: 899.99,
-    image: '/images/phone_illustration.png', // Placeholder
+    image: '/images/phone_illustration.png', 
     ratingCount: 1240,
     deliveryDate: 'Lunes, 25 Nov'
   },
   {
     id: 2,
     title: 'Samsung Galaxy S22 Ultra 5G - 256GB - Negro Fantasma',
+    brand: 'Samsung',
+    condition: 'Nuevo',
     price: 750.50,
     image: '/images/phone_illustration.png',
     ratingCount: 856,
@@ -82,6 +93,8 @@ const phones = ref([
   {
     id: 3,
     title: 'Google Pixel 7 Pro - 128GB - Hazel',
+    brand: 'Google',
+    condition: 'Nuevo',
     price: 649.00,
     image: '/images/phone_illustration.png',
     ratingCount: 432,
@@ -90,6 +103,8 @@ const phones = ref([
   {
     id: 4,
     title: 'Xiaomi Redmi Note 12 - 128GB - Gris Ónix',
+    brand: 'Xiaomi',
+    condition: 'Nuevo',
     price: 199.99,
     image: '/images/phone_illustration.png',
     ratingCount: 2100,
@@ -98,6 +113,8 @@ const phones = ref([
   {
     id: 5,
     title: 'iPhone 12 - 64GB - Blanco (Usado - Bueno)',
+    brand: 'Apple',
+    condition: 'Bueno',
     price: 350.00,
     image: '/images/phone_illustration.png',
     ratingCount: 560,
@@ -106,12 +123,46 @@ const phones = ref([
   {
     id: 6,
     title: 'Samsung Galaxy A54 5G - 128GB - Violeta',
+    brand: 'Samsung',
+    condition: 'Nuevo',
     price: 329.99,
     image: '/images/phone_illustration.png',
     ratingCount: 120,
     deliveryDate: 'Mañana, 24 Nov'
   }
 ])
+
+const filteredPhones = computed(() => {
+  return phones.value.filter(phone => {
+    // 1. Search Query
+    if (searchQuery.value && !phone.title.toLowerCase().includes(searchQuery.value.toLowerCase())) {
+      return false
+    }
+
+    // 2. Brand Filter
+    if (selectedBrands.value.length > 0 && !selectedBrands.value.includes(phone.brand)) {
+      return false
+    }
+
+    // 3. Condition Filter
+    if (selectedConditions.value.length > 0 && !selectedConditions.value.includes(phone.condition)) {
+      return false
+    }
+
+    // 4. Price Filter
+    if (selectedPriceRanges.value.length > 0) {
+      const matchesPrice = selectedPriceRanges.value.some(range => {
+        if (range === 'under200') return phone.price < 200
+        if (range === '200to500') return phone.price >= 200 && phone.price <= 500
+        if (range === 'over500') return phone.price > 500
+        return false
+      })
+      if (!matchesPrice) return false
+    }
+
+    return true
+  })
+})
 </script>
 
 <style scoped>

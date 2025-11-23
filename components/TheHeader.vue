@@ -2,7 +2,7 @@
   <header class="site-header">
     <div class="header-container">
       <!-- Logo -->
-      <NuxtLink to="/" class="logo-link">
+      <NuxtLink to="/home" class="logo-link">
         <span class="market-text">Market</span>
         <span class="phone-text">Phone</span>
       </NuxtLink>
